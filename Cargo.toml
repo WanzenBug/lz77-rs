@@ -1,0 +1,6 @@
+[package]
+name = "lz77-rs"
+version = "0.1.0"
+authors = ["moritz9422 <moritz9422@gmail.com>"]
+
+[dependencies]
