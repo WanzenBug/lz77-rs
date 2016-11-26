@@ -3,4 +3,18 @@ name = "lz77-rs"
 version = "0.1.0"
 authors = ["moritz9422 <moritz9422@gmail.com>"]
 
+[lib]
+name = "lz77"
+
+[[bin]]
+name = "compress"
+path = "src/bin/compress.rs"
+
+[[bin]]
+name = "decompress"
+path = "src/bin/decompress.rs"
+
 [dependencies]
+error-chain = "0.5"
+byteorder = "0.5.3"
+clap = "2.19.0"
