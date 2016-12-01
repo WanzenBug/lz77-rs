@@ -146,8 +146,7 @@ impl<W, S> io::Write for Lz77Encoder<W, S> where W: io::Write, S: Searcher + Def
             };
             self.move_unmatched_to_window(fw);
         }
-        self.out.flush()?;
-        Ok(())
+        self.out.flush()
     }
 }
 
