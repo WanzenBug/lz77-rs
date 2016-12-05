@@ -1,16 +1,19 @@
 use std::io;
-use std::io::{Write};
-use ::{Lz77Options};
-use searcher::{Searcher};
+use std::io::Write;
+use ::Lz77Options;
+use searcher::Searcher;
 use buffer::{RingBuffer, CombinedBuffer, SizedBuffer};
-use codeword::{CodeWord};
+use codeword::CodeWord;
 
 enum Lz77EncoderToken {
     None,
     Match(usize, usize),
 }
 
-pub struct Lz77Encoder<W, S> where W: io::Write, S: Searcher + Default {
+pub struct Lz77Encoder<W, S>
+    where W: io::Write,
+          S: Searcher + Default
+{
     out: W,
     searcher: S,
     window: RingBuffer<u8>,
@@ -20,7 +23,10 @@ pub struct Lz77Encoder<W, S> where W: io::Write, S: Searcher + Default {
     options: Lz77Options,
 }
 
-impl<W, S> Lz77Encoder<W, S> where W: io::Write, S: Searcher + Default {
+impl<W, S> Lz77Encoder<W, S>
+    where W: io::Write,
+          S: Searcher + Default
+{
     pub fn new(output: W, options: Lz77Options) -> Self {
         let size: usize = (1 << options.window_size as usize) - 1;
         let forward_search_size = 1 << (16 - options.window_size);
@@ -60,7 +66,10 @@ impl<W, S> Lz77Encoder<W, S> where W: io::Write, S: Searcher + Default {
 
     fn write_output_buffer(&mut self) -> io::Result<()> {
         if self.output_buffer.len() > 0 {
-            let code = CodeWord::new_with_data(16 - self.options.window_size, 0u16, self.output_buffer.len() as u16 - 1).expect("Somebody screwed up with the CodeWord size");
+            let code = CodeWord::new_with_data(16 - self.options.window_size,
+                                               0u16,
+                                               self.output_buffer.len() as u16 - 1)
+                .expect("Somebody screwed up with the CodeWord size");
             self.out.write_all(&code.as_bytes()[..])?;
             self.out.write_all(&mut self.output_buffer[..])?;
             self.output_buffer.clear();
@@ -78,15 +87,20 @@ impl<W, S> Lz77Encoder<W, S> where W: io::Write, S: Searcher + Default {
                 if self.output_buffer.len() > 0 {
                     self.write_output_buffer()?;
                 }
-                let code = match CodeWord::new_with_data(16 - self.options.window_size, dist as u16, len as u16) {
+                let code = match CodeWord::new_with_data(16 - self.options.window_size,
+                                                         dist as u16,
+                                                         len as u16) {
                     Ok(cw) => cw,
                     Err(e) => {
-                        panic!("Somebody screwed up with the CodeWord size ({}, {}), Err = {}", dist, len, e);
+                        panic!("Somebody screwed up with the CodeWord size ({}, {}), Err = {}",
+                               dist,
+                               len,
+                               e);
                     }
                 };
                 self.out.write_all(&code.as_bytes()[..])?;
                 self.out.write_all(&[next])?;
-            },
+            }
             Lz77EncoderToken::None => {
                 self.output_buffer.push(next);
             }
@@ -95,14 +109,19 @@ impl<W, S> Lz77Encoder<W, S> where W: io::Write, S: Searcher + Default {
     }
 }
 
-impl<W, S> io::Write for Lz77Encoder<W, S> where W: io::Write, S: Searcher + Default {
+impl<W, S> io::Write for Lz77Encoder<W, S>
+    where W: io::Write,
+          S: Searcher + Default
+{
     fn write(&mut self, full_buf: &[u8]) -> io::Result<usize> {
         let size = full_buf.len();
         let mut buf = full_buf;
         while let Some(n) = self.fill_forward_buffer(buf) {
             let search_result = {
                 let search_buf = CombinedBuffer(&self.window, &self.unmatched_data);
-                self.searcher.find_longest_match(&search_buf, &self.unmatched_data[..(self.forward_search_size - 1)])
+                self.searcher.find_longest_match(&search_buf,
+                                                 &self.unmatched_data[..(self.forward_search_size -
+                                                                         1)])
             };
 
             let fw = match search_result {
@@ -111,7 +130,7 @@ impl<W, S> io::Write for Lz77Encoder<W, S> where W: io::Write, S: Searcher + Def
                     let next = self.unmatched_data[res.length];
                     self.write_to_inner(Lz77EncoderToken::Match(dist, res.length), next)?;
                     res.length + 1
-                },
+                }
                 None => {
                     let next = self.unmatched_data[0];
                     self.write_to_inner(Lz77EncoderToken::None, next)?;
@@ -139,7 +158,7 @@ impl<W, S> io::Write for Lz77Encoder<W, S> where W: io::Write, S: Searcher + Def
                     let next = self.unmatched_data[res.length];
                     self.write_to_inner(Lz77EncoderToken::Match(dist, res.length), next)?;
                     res.length + 1
-                },
+                }
                 None => {
                     let next = self.unmatched_data[0];
                     self.write_to_inner(Lz77EncoderToken::None, next)?;
@@ -153,7 +172,10 @@ impl<W, S> io::Write for Lz77Encoder<W, S> where W: io::Write, S: Searcher + Def
     }
 }
 
-impl<W, S> Drop for Lz77Encoder<W,S> where W: io::Write, S: Searcher + Default {
+impl<W, S> Drop for Lz77Encoder<W, S>
+    where W: io::Write,
+          S: Searcher + Default
+{
     fn drop(&mut self) {
         let _ = self.flush();
     }

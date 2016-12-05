@@ -1,7 +1,7 @@
-use std::ops::{Index};
-use std::default::{Default};
+use std::ops::Index;
+use std::default::Default;
 use super::{Searcher, SearchResult};
-use ::buffer::{SizedBuffer};
+use ::buffer::SizedBuffer;
 
 pub struct LinearSearcher {}
 
@@ -12,7 +12,9 @@ impl Default for LinearSearcher {
 }
 
 impl Searcher for LinearSearcher {
-    fn find_longest_match<B>(&mut self, buf: &B, key: &[u8]) -> Option<SearchResult> where B: SizedBuffer + Index<usize, Output = u8> {
+    fn find_longest_match<B>(&mut self, buf: &B, key: &[u8]) -> Option<SearchResult>
+        where B: SizedBuffer + Index<usize, Output = u8>
+    {
         let mut best: Option<SearchResult> = None;
         if buf.len() > (key.len() + 2) {
             for i in 0..(buf.len() - key.len() - 2) {
@@ -23,21 +25,19 @@ impl Searcher for LinearSearcher {
                     j += 1;
                 }
                 best = match (best, cur_len) {
-                    (Some(ref x), len) if x.length < len  => {
+                    (Some(ref x), len) if x.length < len => {
                         Some(SearchResult {
                             position: i,
                             length: len,
                         })
-                    },
+                    }
                     (None, len) if len > 1 => {
                         Some(SearchResult {
                             position: i,
                             length: len,
                         })
                     }
-                    (x, _) => {
-                        x
-                    },
+                    (x, _) => x,
                 }
             }
         }
@@ -48,8 +48,8 @@ impl Searcher for LinearSearcher {
 
 #[cfg(test)]
 mod tests {
-    use super::{LinearSearcher};
-    use ::buffer::{RingBuffer};
+    use super::LinearSearcher;
+    use ::buffer::RingBuffer;
     use ::searcher::{SearchResult, Searcher};
 
     #[test]
@@ -67,9 +67,10 @@ mod tests {
         let res = searcher.find_longest_match(&buffer, &key);
         assert!(res.is_some());
         let search_res = res.unwrap();
-        assert_eq!(search_res, SearchResult {
-            position: 0,
-            length: 3,
-        });
+        assert_eq!(search_res,
+                   SearchResult {
+                       position: 0,
+                       length: 3,
+                   });
     }
 }

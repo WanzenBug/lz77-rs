@@ -76,7 +76,9 @@ impl<T> RingBuffer<T> {
 }
 
 impl RingBuffer<u8> {
-    pub fn read_to_buf<R>(&mut self, reader: &mut R, size: usize) -> io::Result<()> where R: io::Read {
+    pub fn read_to_buf<R>(&mut self, reader: &mut R, size: usize) -> io::Result<()>
+        where R: io::Read
+    {
         let mut pos = 0;
 
         while pos < size {
@@ -97,10 +99,15 @@ impl RingBuffer<u8> {
     }
 }
 
-pub struct CombinedBuffer<'a, 'b, A, B, T>(pub &'a A, pub &'b B) where A: 'a + SizedBuffer + Index<usize, Output = T>, B: 'b + SizedBuffer + Index<usize, Output = T>;
+pub struct CombinedBuffer<'a, 'b, A, B, T>(pub &'a A, pub &'b B)
+    where A: 'a + SizedBuffer + Index<usize, Output = T>,
+          B: 'b + SizedBuffer + Index<usize, Output = T>;
 
 
-impl<'a, 'b, A, B, T> Index<usize> for CombinedBuffer<'a, 'b, A, B, T> where A: 'a + SizedBuffer + Index<usize, Output = T>, B: 'b + SizedBuffer + Index<usize, Output = T> {
+impl<'a, 'b, A, B, T> Index<usize> for CombinedBuffer<'a, 'b, A, B, T>
+    where A: 'a + SizedBuffer + Index<usize, Output = T>,
+          B: 'b + SizedBuffer + Index<usize, Output = T>
+{
     type Output = T;
 
     fn index(&self, index: usize) -> &Self::Output {
@@ -112,13 +119,19 @@ impl<'a, 'b, A, B, T> Index<usize> for CombinedBuffer<'a, 'b, A, B, T> where A: 
     }
 }
 
-impl<'a, 'b, A, B, T> SizedBuffer for CombinedBuffer<'a, 'b, A, B, T> where A: 'a + SizedBuffer + Index<usize, Output = T>, B: 'b + SizedBuffer + Index<usize, Output = T> {
+impl<'a, 'b, A, B, T> SizedBuffer for CombinedBuffer<'a, 'b, A, B, T>
+    where A: 'a + SizedBuffer + Index<usize, Output = T>,
+          B: 'b + SizedBuffer + Index<usize, Output = T>
+{
     fn len(&self) -> usize {
         self.0.len() + self.1.len()
     }
 }
 
-impl<'a, 'b, A, B, T> fmt::Debug for CombinedBuffer<'a, 'b, A, B, T> where A: 'a + SizedBuffer + Index<usize, Output = T> + fmt::Debug, B: 'b + SizedBuffer + Index<usize, Output = T> + fmt::Debug {
+impl<'a, 'b, A, B, T> fmt::Debug for CombinedBuffer<'a, 'b, A, B, T>
+    where A: 'a + SizedBuffer + Index<usize, Output = T> + fmt::Debug,
+          B: 'b + SizedBuffer + Index<usize, Output = T> + fmt::Debug
+{
     fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
         self.0.fmt(fmt)?;
         self.1.fmt(fmt)
@@ -129,7 +142,7 @@ impl<'a, 'b, A, B, T> fmt::Debug for CombinedBuffer<'a, 'b, A, B, T> where A: 'a
 #[cfg(test)]
 mod tests {
     use super::*;
-    use std::io::{Cursor};
+    use std::io::Cursor;
 
     #[test]
     fn test_ring_buffer() {

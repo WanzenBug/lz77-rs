@@ -30,16 +30,20 @@ fn main() {
             .help("Sets verbose output"))
         .get_matches();
 
-    let infile = matches.value_of("INPUT").and_then(|file| File::open(file).ok()).expect("Input: No such file");
-    let outfile = matches.value_of("OUTPUT").and_then(|file| File::create(file).ok()).expect("Output: Could not create file");
-    let window_size: u8 = matches.value_of("window_size").and_then(|size| size.parse::<u8>().ok()).expect("Invalid value for window_size");
+    let infile = matches.value_of("INPUT")
+        .and_then(|file| File::open(file).ok())
+        .expect("Input: No such file");
+    let outfile = matches.value_of("OUTPUT")
+        .and_then(|file| File::create(file).ok())
+        .expect("Output: Could not create file");
+    let window_size: u8 = matches.value_of("window_size")
+        .and_then(|size| size.parse::<u8>().ok())
+        .expect("Invalid value for window_size");
 
     let mut read = util::StatsReader::new(BufReader::new(infile));
     let mut write = util::StatsWriter::new(BufWriter::new(outfile));
 
-    let opts = Lz77Options {
-        window_size: window_size,
-    };
+    let opts = Lz77Options { window_size: window_size };
     {
         let mut encoder = Lz77Encoder::<_, LinearSearcher>::new(&mut write, opts);
         copy(&mut read, &mut encoder).expect("Something went wrong while encoding");

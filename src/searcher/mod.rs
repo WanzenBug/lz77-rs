@@ -1,9 +1,9 @@
 pub mod linear_search;
 
-use std::ops::{Index};
-use ::buffer::{SizedBuffer};
+use std::ops::Index;
+use ::buffer::SizedBuffer;
 
-pub use self::linear_search::{LinearSearcher};
+pub use self::linear_search::LinearSearcher;
 
 #[derive(PartialEq, Eq, Debug)]
 pub struct SearchResult {
@@ -12,6 +12,6 @@ pub struct SearchResult {
 }
 
 pub trait Searcher {
-    fn find_longest_match<B>(&mut self, buf: &B, key: &[u8]) -> Option<SearchResult> where B: SizedBuffer + Index<usize, Output = u8>;
+    fn find_longest_match<B>(&mut self, buf: &B, key: &[u8]) -> Option<SearchResult>
+        where B: SizedBuffer + Index<usize, Output = u8>;
 }
-
