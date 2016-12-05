@@ -59,10 +59,12 @@ impl<W, S> Lz77Encoder<W, S> where W: io::Write, S: Searcher + Default {
     }
 
     fn write_output_buffer(&mut self) -> io::Result<()> {
-        let code = CodeWord::new_with_data(16 - self.options.window_size, 0u16, self.output_buffer.len() as u16 - 1).expect("Somebody screwed up with the CodeWord size");
-        self.out.write_all(&code.as_bytes()[..])?;
-        self.out.write_all(&mut self.output_buffer[..])?;
-        self.output_buffer.clear();
+        if self.output_buffer.len() > 0 {
+            let code = CodeWord::new_with_data(16 - self.options.window_size, 0u16, self.output_buffer.len() as u16 - 1).expect("Somebody screwed up with the CodeWord size");
+            self.out.write_all(&code.as_bytes()[..])?;
+            self.out.write_all(&mut self.output_buffer[..])?;
+            self.output_buffer.clear();
+        }
         Ok(())
     }
 
@@ -146,6 +148,7 @@ impl<W, S> io::Write for Lz77Encoder<W, S> where W: io::Write, S: Searcher + Def
             };
             self.move_unmatched_to_window(fw);
         }
+        self.write_output_buffer()?;
         self.out.flush()
     }
 }
